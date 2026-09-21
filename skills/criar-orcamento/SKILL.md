@@ -23,7 +23,7 @@ Perguntar no terminal, um campo por vez (com defaults sensatos quando vazio):
 - **Objetivo do projeto** (opcional)
 - **Expectativa do cliente** (opcional)
 - **Nível de complexidade** (opcional — baixa/média/alta)
-- **Tipo de serviço desejado** (opcional — IA / tráfego pago / dados / BI / performance — somente os 5 verticais do SYSTEM_PROMPT original; não aceitar outras categorias)
+- **Tipo de serviço desejado** (opcional — IA / tráfego pago / dados / BI / performance — somente esses 5 verticais; não aceitar outras categorias)
 - **Prazo desejado** (opcional — em dias)
 - **Orçamento estimado** (opcional — em reais)
 

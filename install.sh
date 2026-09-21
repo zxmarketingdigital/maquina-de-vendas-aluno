@@ -15,9 +15,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="${SCRIPT_DIR}/skills"
 DEST_DIR="${HOME}/.claude/skills"
 
-# Lista fixa e explícita das 6 skills da imersão — nunca "tudo que tiver
+# Lista fixa e explícita das 10 skills da imersão — nunca "tudo que tiver
 # na pasta skills/", pra nunca instalar algo que não seja da imersão.
-SKILL_NAMES="maquina-de-vendas mva-diagnostico mva-oferta mva-maquina mva-conversa mva-relatorio"
+# As 6 primeiras são as etapas da imersão; as 4 últimas são as skills
+# comerciais que vieram como bônus.
+SKILL_NAMES="maquina-de-vendas mva-diagnostico mva-oferta mva-maquina mva-conversa mva-relatorio checklist-pre-call simulador-vendas analise-call criar-orcamento"
 
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 

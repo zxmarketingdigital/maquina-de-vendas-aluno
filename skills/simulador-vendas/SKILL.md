@@ -138,7 +138,7 @@ Usar a tool Write do Claude Code para salvar somente o Markdown em `~/minha-maqu
 
 ---
 
-## SYSTEM_PROMPT do CLIENTE (literal — simulate-client-reply)
+## SYSTEM_PROMPT do CLIENTE (literal)
 
 Construir variáveis e injetar:
 
@@ -240,7 +240,7 @@ Temperature original: `0.7`, max_tokens: `500`.
 
 ---
 
-## SYSTEM_PROMPT do COACH (literal — generate-trainer-report)
+## SYSTEM_PROMPT do COACH (literal)
 
 Variáveis:
 
@@ -316,7 +316,7 @@ Temperature original: `0.5`, max_tokens: `2000`.
 
 ---
 
-## Estrutura do feedback final (literal — TrainerReport interface)
+## Estrutura do feedback final
 
 Schema do feedback:
 

@@ -1,6 +1,6 @@
 # Máquina de Vendas Automatizada — seus comandos
 
-Este repositório instala, no Claude Code do seu computador, os 6 comandos que você ganhou na Imersão Máquina de Vendas Automatizada. Com eles você faz um diagnóstico de onde trava pra vender, define sua oferta em uma frase, organiza seus leads, treina a conversa de venda, sai com um plano de 7 dias e gera o seu relatório completo em PDF — tudo rodando dentro do seu próprio Claude Code, sem depender de nenhum site ou login novo.
+Este repositório instala, no Claude Code do seu computador, os 10 comandos que você ganhou na Imersão Máquina de Vendas Automatizada — as 6 etapas da imersão e as 4 skills comerciais que vieram como bônus. Com eles você faz um diagnóstico de onde trava pra vender, define sua oferta em uma frase, organiza seus leads, treina a conversa de venda, sai com um plano de 7 dias e gera o seu relatório completo em PDF — tudo rodando dentro do seu próprio Claude Code, sem depender de nenhum site ou login novo.
 
 ## Instalação
 
@@ -26,7 +26,7 @@ Abra o Claude Code no seu computador e digite:
 
 Na primeira vez, esse comando explica o caminho das 4 etapas, pergunta seu nome e já te leva pro diagnóstico. Nas próximas vezes, ele lembra onde você parou e continua exatamente dali — na ordem certa pro que mais trava você hoje, não numa ordem fixa.
 
-## Os 6 comandos
+## As 6 etapas da imersão
 
 | Comando | O que faz |
 |---|---|
@@ -36,6 +36,19 @@ Na primeira vez, esse comando explica o caminho das 4 etapas, pergunta seu nome 
 | `/mva-maquina` | Etapa 3 — organiza seus leads e mostra quem priorizar hoje |
 | `/mva-conversa` | Etapa 4 — treina a conversa de venda antes da call de verdade |
 | `/mva-relatorio` | Junta tudo o que você respondeu num relatório em PDF, no seu computador |
+
+## As 4 skills comerciais (bônus)
+
+Enquanto as skills acima montam o seu processo, estas quatro trabalham **uma venda específica** — do preparo da call até a proposta. Use quando quiser, em qualquer ordem.
+
+| Comando | O que faz |
+|---|---|
+| `/checklist-pre-call` | Prepara uma call com nome e data: separa o que você sabe do que está supondo, monta as perguntas de diagnóstico e fixa um objetivo único |
+| `/simulador-vendas` | Você treina vendendo e o Claude faz o cliente, no perfil e na dificuldade que você escolher; no fim, feedback com plano de melhoria |
+| `/analise-call` | Você cola a transcrição ou o resumo de uma call real e recebe objeções, bloqueios, ajustes e o foco das próximas conversas |
+| `/criar-orcamento` | Transforma escopo e valor numa proposta estruturada, pronta para enviar ao cliente |
+
+Um caminho que funciona bem: `/checklist-pre-call` antes da conversa, `/simulador-vendas` para treinar, e `/analise-call` depois que ela acontecer.
 
 Você não precisa rodar os comandos das etapas manualmente na ordem da tabela — use sempre `/maquina-de-vendas` para começar ou continuar, e ele chama a etapa certa por você. O `/mva-relatorio` você chama quando quiser o PDF, com quantas etapas tiver feito.
 

@@ -1,7 +1,7 @@
 ---
 name: analise-call
 description: "Analisa call de vendas colada no chat. Identifica objeções perdidas, gatilhos não usados, próximos passos sugeridos e script de follow-up sugerido. Output em Markdown. Use quando aluno disser: analisar call de vendas, revisar call comercial, feedback de call, análise call cliente, call coach, melhorar próxima call, follow-up call vendas, /analise-call."
-model: claude-opus-5
+model: claude-sonnet-5
 effort: high
 ---
 
@@ -86,7 +86,7 @@ Experiência com IA: ...
 
 A skill (rodando dentro do Claude) executa o raciocínio diretamente — não há HTTP. Mas o output JSON deve respeitar **literalmente** o schema abaixo.
 
-### Etapa 4 — Schema de output (literal do tool `analyze_call`)
+### Etapa 4 — Schema de output
 
 ```json
 {
