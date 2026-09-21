@@ -71,18 +71,51 @@ def agora_br() -> datetime:
 # --------------------------------------------------------------------------- #
 # ler o que o aluno já produziu
 # --------------------------------------------------------------------------- #
+def ler_texto_seguro(caminho: Path) -> str:
+    """Lê um arquivo da pasta do aluno, ou devolve "" quando não há o que ler.
+
+    Só aceita arquivo REGULAR e NÃO-symlink: um `01-diagnostico.md` que seja link
+    para `~/.ssh/id_rsa` colocaria aquele conteúdo dentro do relatório. E qualquer
+    OSError (é uma pasta com esse nome, falta permissão, disco com problema) vira
+    lacuna declarada em vez de traceback na cara de quem não programa.
+    """
+    try:
+        if caminho.is_symlink() or not caminho.is_file():
+            return ""
+        return caminho.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def caminho_de_saida_seguro(caminho: Path) -> Path:
+    """Recusa escrever num symlink: `meu-relatorio.html` apontando para um arquivo
+    do aluno faria o relatório sobrescrever aquele arquivo. Nesse caso escreve ao
+    lado, com sufixo, em vez de seguir o link."""
+    if caminho.is_symlink():
+        return caminho.with_name(f"{caminho.stem}-novo{caminho.suffix}")
+    return caminho
+
+
+def escrever_texto_atomico(caminho: Path, texto: str) -> Path:
+    destino = caminho_de_saida_seguro(caminho)
+    tmp = destino.with_name(f".{destino.name}.tmp")
+    tmp.write_text(texto, encoding="utf-8")
+    os.replace(tmp, destino)
+    return destino
+
+
 def carregar_perfil(pasta: Path) -> dict:
     """perfil.json ausente ou corrompido não é erro fatal aqui — o nome do aluno
     vira "Aluno" e o resto do relatório segue montado a partir dos .md das etapas."""
     import json
 
-    caminho = pasta / NOME_ARQUIVO_PERFIL
-    if not caminho.exists():
+    bruto = ler_texto_seguro(pasta / NOME_ARQUIVO_PERFIL)
+    if not bruto.strip():
         return {}
     try:
-        dados = json.loads(caminho.read_text(encoding="utf-8"))
+        dados = json.loads(bruto)
         return dados if isinstance(dados, dict) else {}
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+    except (json.JSONDecodeError, ValueError):
         return {}
 
 
@@ -100,8 +133,7 @@ def nome_do_aluno(perfil: dict) -> str:
 def etapas_concluidas(pasta: Path) -> int:
     total = 0
     for _, _, nome_arquivo, _ in ETAPAS:
-        caminho = pasta / nome_arquivo
-        if caminho.exists() and caminho.read_text(encoding="utf-8", errors="replace").strip():
+        if ler_texto_seguro(pasta / nome_arquivo).strip():
             total += 1
     return total
 
@@ -152,7 +184,7 @@ def montar_markdown(pasta: Path) -> str:
         caminho = pasta / nome_arquivo
         add(f"## Etapa {numero} — {titulo}")
         add("")
-        conteudo = caminho.read_text(encoding="utf-8", errors="replace").strip() if caminho.exists() else ""
+        conteudo = ler_texto_seguro(caminho).strip()
         if conteudo:
             add(rebaixar_titulos(conteudo))
         else:
@@ -160,14 +192,12 @@ def montar_markdown(pasta: Path) -> str:
                 "para completá-la._")
         add("")
 
-    plano = pasta / NOME_ARQUIVO_PLANO
-    if plano.exists():
-        conteudo_plano = plano.read_text(encoding="utf-8", errors="replace").strip()
-        if conteudo_plano:
-            add("## Seu plano de 7 dias")
-            add("")
-            add(rebaixar_titulos(conteudo_plano))
-            add("")
+    conteudo_plano = ler_texto_seguro(pasta / NOME_ARQUIVO_PLANO).strip()
+    if conteudo_plano:
+        add("## Seu plano de 7 dias")
+        add("")
+        add(rebaixar_titulos(conteudo_plano))
+        add("")
 
     add("---")
     add("")
@@ -330,6 +360,18 @@ def chrome_paths_do_sistema() -> tuple[str, ...]:
     return ()
 
 
+def pdf_valido(caminho: Path) -> bool:
+    """Existir com bytes não prova PDF: engine que morre no meio (disco cheio,
+    kill) deixa arquivo truncado e não-vazio. A assinatura `%PDF-` é o piso."""
+    try:
+        if not caminho.is_file() or caminho.stat().st_size <= 0:
+            return False
+        with caminho.open("rb") as fh:
+            return fh.read(5) == b"%PDF-"
+    except OSError:
+        return False
+
+
 def _documento_html(md: str) -> str:
     corpo = markdown_para_html(md)
     return (f"<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'>"
@@ -354,12 +396,12 @@ def _preparar_libs_nativas() -> None:
     os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = ":".join(partes)
 
 
-def _pdf_por_weasyprint(md: str, destino: Path) -> bool:
+def _pdf_por_weasyprint(md: str, destino: Path, teto: float = PDF_TIMEOUT) -> bool:
     """Engine preferida: respeita @page e numera as páginas.
 
     Roda em SUBPROCESSO porque ``write_pdf`` não aceita timeout: um dlopen
     travado ou um documento patológico prenderia o script para sempre, sem
-    elapsed no log. No subprocesso o teto é o mesmo PDF_TIMEOUT do navegador.
+    elapsed no log. O teto vem de quem chama (o prazo GLOBAL restante).
     """
     import subprocess
     import tempfile
@@ -375,9 +417,9 @@ def _pdf_por_weasyprint(md: str, destino: Path) -> bool:
         t0 = time.monotonic()
         try:
             proc = subprocess.run([sys.executable, "-c", codigo, str(origem), str(destino)],
-                                  capture_output=True, timeout=PDF_TIMEOUT)
+                                  capture_output=True, timeout=teto)
         except subprocess.TimeoutExpired:
-            print(f"[gerar-pdf] weasyprint estourou o teto de {PDF_TIMEOUT:.0f}s "
+            print(f"[gerar-pdf] weasyprint estourou o teto de {teto:.0f}s "
                   f"(ajuste com MVA_PDF_TIMEOUT); tentando navegador.", file=sys.stderr)
             return False
         elapsed = time.monotonic() - t0
@@ -386,11 +428,11 @@ def _pdf_por_weasyprint(md: str, destino: Path) -> bool:
             print(f"[gerar-pdf] weasyprint indisponível ({detalhe[-1] if detalhe else proc.returncode}); "
                   "tentando navegador.", file=sys.stderr)
             return False
-        print(f"[gerar-pdf] PDF levou {elapsed:.0f}s (teto {PDF_TIMEOUT:.0f}s) — weasyprint")
-    return destino.exists() and destino.stat().st_size > 0
+        print(f"[gerar-pdf] PDF levou {elapsed:.0f}s (teto {teto:.0f}s) — weasyprint")
+    return pdf_valido(destino)
 
 
-def _pdf_por_navegador(md: str, destino: Path) -> bool:
+def _pdf_por_navegador(md: str, destino: Path, teto: float = PDF_TIMEOUT) -> bool:
     """Fallback: Chrome/Chromium/Edge headless. Sem numeração de página."""
     import shutil
     import subprocess
@@ -413,18 +455,18 @@ def _pdf_por_navegador(md: str, destino: Path) -> bool:
                f"--print-to-pdf={destino}", origem.as_uri()]
         t0 = time.monotonic()
         try:
-            proc = subprocess.run(cmd, capture_output=True, timeout=PDF_TIMEOUT)
+            proc = subprocess.run(cmd, capture_output=True, timeout=teto)
         except subprocess.TimeoutExpired:
-            print(f"[gerar-pdf] navegador estourou o teto de {PDF_TIMEOUT:.0f}s "
+            print(f"[gerar-pdf] navegador estourou o teto de {teto:.0f}s "
                   f"(ajuste com MVA_PDF_TIMEOUT)", file=sys.stderr)
             return False
         print(f"[gerar-pdf] PDF levou {time.monotonic() - t0:.0f}s "
-              f"(teto {PDF_TIMEOUT:.0f}s) — navegador")
+              f"(teto {teto:.0f}s) — navegador")
         if proc.returncode != 0 and not destino.exists():
             print(f"[gerar-pdf] navegador saiu {proc.returncode}: "
                   f"{proc.stderr.decode(errors='replace')[:300]}", file=sys.stderr)
             return False
-    return destino.exists() and destino.stat().st_size > 0
+    return pdf_valido(destino)
 
 
 def render_pdf(md: str, destino: Path) -> tuple[bool, Path]:
@@ -442,16 +484,24 @@ def render_pdf(md: str, destino: Path) -> tuple[bool, Path]:
     # Gerar num arquivo provisório e só então substituir: se as duas engines
     # falharem, o PDF que o aluno já tinha continua intacto. Apagar o destino
     # antes de tentar trocaria uma falha de engine por perda de arquivo dele.
+    # Teto GLOBAL: as duas engines somadas não passam de PDF_TIMEOUT. Dar o teto
+    # cheio a cada uma faria o aluno esperar o dobro do que o log anuncia.
+    prazo = time.monotonic() + PDF_TIMEOUT
     with tempfile.TemporaryDirectory() as tmp:
-        provisorio = Path(tmp) / NOME_ARQUIVO_PDF
-        for engine in (_pdf_por_weasyprint, _pdf_por_navegador):
-            if engine(md, provisorio):
-                shutil.move(str(provisorio), str(destino))
-                return True, destino
-            if provisorio.exists():
-                provisorio.unlink()  # sobra de tentativa falha nunca vira "sucesso"
-    destino_html = destino.with_suffix(".html")
-    destino_html.write_text(_documento_html(md), encoding="utf-8")
+        for indice, engine in enumerate((_pdf_por_weasyprint, _pdf_por_navegador)):
+            restante = prazo - time.monotonic()
+            if restante <= 0:
+                print(f"[gerar-pdf] teto de {PDF_TIMEOUT:.0f}s esgotado antes da "
+                      "última tentativa (ajuste com MVA_PDF_TIMEOUT)", file=sys.stderr)
+                break
+            # Um arquivo por tentativa: resto de tentativa anterior nunca é lido
+            # como resultado da seguinte.
+            provisorio = Path(tmp) / f"tentativa{indice}.pdf"
+            if engine(md, provisorio, restante):
+                destino_final = caminho_de_saida_seguro(destino)
+                shutil.move(str(provisorio), str(destino_final))
+                return True, destino_final
+    destino_html = escrever_texto_atomico(destino.with_suffix(".html"), _documento_html(md))
     return False, destino_html
 
 
@@ -482,7 +532,13 @@ def main() -> int:
     destino_pdf = pasta / NOME_ARQUIVO_PDF
 
     inicio = time.monotonic()
-    sucesso, caminho = render_pdf(md, destino_pdf)
+    try:
+        sucesso, caminho = render_pdf(md, destino_pdf)
+    except OSError as erro:
+        # Sem permissão na pasta, disco cheio: mensagem clara em vez de traceback.
+        print(f"Não consegui escrever em {pasta}: {erro}")
+        print("Confira se você tem permissão de escrita nessa pasta e tente de novo.")
+        return 1
     print(f"[gerar-pdf] total: {time.monotonic() - inicio:.0f}s (teto {PDF_TIMEOUT:.0f}s) "
           f"— relatório de {nome} ({slugify(nome)})")
 
