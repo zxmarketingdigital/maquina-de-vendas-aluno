@@ -1,0 +1,28 @@
+# Dados locais do aluno — nunca versionar
+minha-maquina-de-vendas/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backups do instalador
+*.bak-*
