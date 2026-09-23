@@ -1,6 +1,6 @@
 # Máquina de Vendas Automatizada — seus comandos
 
-Este repositório instala, no Claude Code do seu computador, os 10 comandos que você ganhou na Imersão Máquina de Vendas Automatizada — as 6 etapas da imersão e as 4 skills comerciais que vieram como bônus. Com eles você faz um diagnóstico de onde trava pra vender, define sua oferta em uma frase, organiza seus leads, treina a conversa de venda, sai com um plano de 7 dias e gera o seu relatório completo em PDF — tudo rodando dentro do seu próprio Claude Code, sem depender de nenhum site ou login novo.
+Este repositório instala, no Claude Code do seu computador, os 10 comandos que você ganhou na Imersão Máquina de Vendas Automatizada — os 6 comandos do método e as 4 skills comerciais que vieram como bônus. Com eles você faz um diagnóstico de onde trava pra vender, define sua oferta em uma frase, organiza seus leads, treina a conversa de venda, sai com um plano de 7 dias e gera o seu relatório completo em PDF — tudo rodando dentro do seu próprio Claude Code, sem depender de nenhum site ou login novo.
 
 ## Instalação
 
@@ -26,15 +26,15 @@ Abra o Claude Code no seu computador e digite:
 
 Na primeira vez, esse comando explica o caminho das 4 etapas, pergunta seu nome e já te leva pro diagnóstico. Nas próximas vezes, ele lembra onde você parou e continua exatamente dali — na ordem certa pro que mais trava você hoje, não numa ordem fixa.
 
-## As 6 etapas da imersão
+## Os 6 comandos do método
 
 | Comando | O que faz |
 |---|---|
 | `/maquina-de-vendas` | Ponto de entrada — mostra seu progresso e te leva pra próxima etapa certa |
-| `/mva-diagnostico` | Etapa 1 — 7 perguntas pra achar onde você trava pra vender hoje |
-| `/mva-oferta` | Etapa 2 — define sua oferta em uma frase que qualquer pessoa entende |
-| `/mva-maquina` | Etapa 3 — organiza seus leads e mostra quem priorizar hoje |
-| `/mva-conversa` | Etapa 4 — treina a conversa de venda antes da call de verdade |
+| `/mva-diagnostico` | Passo 1 — 7 perguntas pra achar onde você trava pra vender hoje |
+| `/mva-oferta` | Passo 2 — define sua oferta em uma frase que qualquer pessoa entende |
+| `/mva-maquina` | Passo 3 — organiza seus leads e mostra quem priorizar hoje |
+| `/mva-conversa` | Passo 4 — treina a conversa de venda antes da call de verdade |
 | `/mva-relatorio` | Junta tudo o que você respondeu num relatório em PDF, no seu computador |
 
 ## As 4 skills comerciais (bônus)
